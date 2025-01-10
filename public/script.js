@@ -70,35 +70,39 @@ function setupEventListeners() {
 }
 
 function loadImage() {
-    const centerImg = document.getElementById("center-image");
-    const noImagesMsg = document.getElementById("no-images-message"); 
-    // For example, a <div> in your HTML that says 
-    // "No images remaining. Please upload more to continue."
-  
-    // Filter out images that are already rated
-    const remaining = images.filter(img => !isImageRated(img));
-  
-    // If there are zero images total (either the folder is empty or all are rated)
-    if (remaining.length === 0) {
-      centerImg.style.display = "none";
-      noImagesMsg.style.display = "block";  
-      noImagesMsg.textContent = "No images remain to be ranked. Please upload more to continue.";
-      return; 
-    }
-  
-    // If we've gone past the last unranked image
-    if (currentImageIndex >= remaining.length) {
-      centerImg.style.display = "none";
-      noImagesMsg.style.display = "block";
-      noImagesMsg.textContent = "All images have been ranked or no images remain.";
-      return;
-    }
-  
-    // Otherwise, display the current unranked image
-    noImagesMsg.style.display = "none"; // Hide the message if we do have an image
-    centerImg.src = remaining[currentImageIndex];
-    centerImg.style.display = "block";
+  const centerImg = document.getElementById("center-image");
+  const noImagesMsg = document.getElementById("no-images-message"); 
+  // noImagesMsg is a <div> or <p> element that you hide/show as needed.
+
+  // 1. Filter out images that have already been rated
+  const remaining = images.filter(img => !isImageRated(img));
+
+  // 2. If no unranked images exist at all
+  if (remaining.length === 0) {
+    centerImg.style.display = "none";
+    // Optionally clear out any previous src to avoid lingering old images
+    centerImg.removeAttribute("src");
+
+    noImagesMsg.style.display = "block";  
+    noImagesMsg.textContent = "No images remain to be ranked. Please upload more to continue.";
+    return; 
   }
+
+  // 3. If we've gone past the last unranked image
+  if (currentImageIndex >= remaining.length) {
+    centerImg.style.display = "none";
+    centerImg.removeAttribute("src");
+
+    noImagesMsg.style.display = "block";
+    noImagesMsg.textContent = "All images have been ranked or no images remain.";
+    return;
+  }
+
+  // 4. Otherwise, display the current unranked image
+  noImagesMsg.style.display = "none";
+  centerImg.src = remaining[currentImageIndex];
+  centerImg.style.display = "block";
+}
 
 // ----------------------
 // Check if Image is Rated
@@ -299,38 +303,49 @@ function loadStateFromLocalStorage() {
     localStorage.setItem('history', JSON.stringify(history));
   }
 
-function uploadImages(event) {
+  function uploadImages(event) {
     const files = event.target.files;
     if (!files || files.length === 0) {
       return;
     }
+  
+    // Count how many unranked images existed before new uploads
+    const oldRemaining = images.filter(img => !isImageRated(img)).length;
+  
     const formData = new FormData();
     for (const file of files) {
       formData.append('images', file);
     }
+  
     fetch('/api/upload', {
       method: 'POST',
       body: formData
     })
       .then(response => {
-        if (!response.ok) throw new Error('Upload failed');
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
         return response.json();
       })
       .then(data => {
-        // Server returns { files: ["somefile.jpg", ...], etc. }
+        // e.g. data.files = ["1234-cat.jpg", "5678-dog.png"]
         console.log('Server returned uploaded files:', data.files);
   
-        // Convert them to /images/somefile.jpg or similar
-        const newPaths = data.files.map(f => "/images/" + f);
+        // Build the actual /images/... paths
+        const newPaths = data.files.map(f => `/images/${f}`);
         images.push(...newPaths);
   
+        // If there were 0 unranked images, we were effectively "done" before upload.
+        // Reset the index so we see newly uploaded images first.
+        if (oldRemaining === 0) {
+          currentImageIndex = 0;
+        }
+  
+        // Persist the updated array
         saveStateToLocalStorage();
   
-        const centerImg = document.getElementById("center-image");
-        if (centerImg.style.display === "none") {
-          currentImageIndex = 0;
-          loadImage();
-        }
+        // Always refresh the main view
+        loadImage();
       })
       .catch(err => console.error('Error uploading images:', err));
   }
