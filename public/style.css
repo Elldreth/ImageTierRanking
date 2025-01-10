@@ -2,187 +2,221 @@
 
 /* 1. Global Reset & Body Styles */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  html, body {
-    height: 100%;
-    font-family: 'Open Sans', sans-serif; /* or your favorite */
-    background-color: #1F2937; /* Dark gray-blue background */
-    color: #F9FAFB;           /* Light text */
-    line-height: 1.5;
-  }
-  
-  /* Container to center everything */
-  .container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 0;
-  }
-  
-  /* 2. Headings */
-  h1 {
-    font-size: 2rem;
-    text-align: center;
-    margin-bottom: 2rem;
-    color: #F9FAFB;
-  }
-  
-  /* 3. Rating Row - displays the 5 rating "slots" */
-  .rating-row {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap; /* responsive wrap */
-  }
-  
-  /* 4. Each Rating Container */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Open Sans', sans-serif; /* or your favorite */
+  background-color: #1F2937; /* Dark gray-blue background */
+  color: #F9FAFB;           /* Light text */
+  line-height: 1.5;
+}
+
+/* Container to center everything */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+/* 2. Headings */
+h1 {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #F9FAFB;
+}
+
+/* 3. Rating Row - displays the 5 rating "slots" */
+.rating-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap; /* responsive wrap */
+}
+
+/* 4. Each Rating Container */
+.rating-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border: 2px solid #374151; /* Subtle border */
+  border-radius: 8px;
+  background-color: #2D3748; /* Slightly lighter dark */
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rating-container:hover {
+  /* Hover uses amber accent color for a glow effect */
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+  transform: translateY(-2px);
+}
+
+.rating-container span {
+  color: #9CA3AF; /* lighter gray text */
+  font-size: 1.1rem;
+  pointer-events: none;
+  z-index: 2; /* so it stays above the image if present */
+}
+
+/* If an image is present, ensure it fits */
+.rating-container img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 1;
+  opacity: 0.8;
+}
+
+/* 5. Center Image */
+#center-image {
+  display: block;
+  margin: 0 auto 1rem auto;
+  max-width: 800px;
+  max-height: 800px;
+  border: 2px solid #374151;
+  border-radius: 8px;
+  background-color: #2D3748;
+  object-fit: contain;
+}
+
+/* 6. Button Row */
+.buttons {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* Style for all buttons */
+.buttons button {
+  background-color: #4F46E5; /* Indigo base */
+  color: #F9FAFB;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  margin: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buttons button:hover {
+  background-color: #4338CA; /* Darker indigo on hover */
+}
+
+.buttons button:active {
+  background-color: #3730A3; /* Even darker on click */
+}
+
+/* 7. Hide the file input (we trigger it via JS) */
+#image-upload {
+  display: none;
+}
+
+/* 8. Responsive Tweaks (for smaller screens) */
+@media (max-width: 768px) {
   .rating-container {
-    position: relative;
-    width: 200px;
-    height: 200px;
-    border: 2px solid #374151; /* Subtle border */
-    border-radius: 8px;
-    background-color: #2D3748; /* Slightly lighter dark */
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0.5rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 90px;
+    height: 90px;
   }
-  
-  .rating-container:hover {
-    /* Hover uses amber accent color for a glow effect */
-    box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
-    transform: translateY(-2px);
-  }
-  
-  .rating-container span {
-    color: #9CA3AF; /* lighter gray text */
-    font-size: 1.1rem;
-    pointer-events: none;
-    z-index: 2; /* so it stays above the image if present */
-  }
-  
-  /* If an image is present, ensure it fits */
-  .rating-container img {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    z-index: 1;
-    opacity: 0.8;
-  }
-  
-  /* 5. Center Image */
+
   #center-image {
-    display: block;
-    margin: 0 auto 1rem auto;
-    max-width: 800px;
-    max-height: 800px;
-    border: 2px solid #374151;
-    border-radius: 8px;
-    background-color: #2D3748;
-    object-fit: contain;
+    max-width: 100%;
+    max-height: 300px;
   }
-  
-  /* 6. Button Row */
-  .buttons {
-    text-align: center;
-    margin-top: 1rem;
-  }
-  
-  /* Style for all buttons */
-  .buttons button {
-    background-color: #4F46E5; /* Indigo base */
-    color: #F9FAFB;
-    border: none;
-    border-radius: 6px;
-    padding: 0.6rem 1.2rem;
-    font-size: 1rem;
-    margin: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .buttons button:hover {
-    background-color: #4338CA; /* Darker indigo on hover */
-  }
-  
-  .buttons button:active {
-    background-color: #3730A3; /* Even darker on click */
-  }
-  
-  /* 7. Hide the file input (we trigger it via JS) */
-  #image-upload {
-    display: none;
-  }
-  
-  /* 8. Responsive Tweaks (for smaller screens) */
-  @media (max-width: 768px) {
-    .rating-container {
-      width: 90px;
-      height: 90px;
-    }
-  
-    #center-image {
-      max-width: 100%;
-      max-height: 300px;
-    }
-  }
-  
-  /* -----------------------------------------------------
-     MODAL STYLES for the Reset Dialog
-     ----------------------------------------------------- */
-  
-  /* The modal overlay (hidden by default) */
-  #reset-modal {
-    display: none; /* important: hidden initially */
-    position: fixed;
-    inset: 0; /* shorthand for top:0, right:0, bottom:0, left:0 */
-    background-color: rgba(0, 0, 0, 0.7); /* dark overlay */
-    z-index: 9999; 
-    justify-content: center;
-    align-items: center;
-  }
-  
-  /* The modal content box */
-  .modal-content {
-    background-color: #2D3748; /* your dark theme color */
-    padding: 2rem;
-    border-radius: 8px;
-    max-width: 400px;
-    width: 90%;
-    color: #F9FAFB; /* light text */
-    text-align: center;
-  }
-  
-  /* Buttons row inside modal */
-  .modal-buttons {
-    margin-top: 1rem;
-    display: flex;
-    justify-content: space-around;
-  }
-  
-  /* Modal buttons can share styling with the rest if you like */
-  .modal-buttons button {
-    background-color: #4F46E5;
-    color: #F9FAFB;
-    border: none;
-    border-radius: 6px;
-    padding: 0.6rem 1.2rem;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .modal-buttons button:hover {
-    background-color: #4338CA;
-  }
-  
+}
+
+/* -----------------------------------------------------
+   MODAL STYLES for the Reset Dialog and Tier Modal
+   ----------------------------------------------------- */
+
+/* The modal overlay (hidden by default) */
+.modal {
+  display: none; /* important: hidden initially */
+  position: fixed;
+  inset: 0; /* top:0, right:0, bottom:0, left:0 */
+  background-color: rgba(0, 0, 0, 0.7); /* dark overlay */
+  z-index: 9999; 
+  justify-content: center;
+  align-items: center;
+}
+
+/* The modal content box */
+.modal-content {
+  background-color: #2D3748; /* dark theme color */
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+  color: #F9FAFB;
+  text-align: center;
+}
+
+/* Buttons row inside modal */
+.modal-buttons {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-around;
+}
+
+/* Modal buttons can share styling with the rest if you like */
+.modal-buttons button {
+  background-color: #4F46E5;
+  color: #F9FAFB;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.modal-buttons button:hover {
+  background-color: #4338CA;
+}
+
+/* Specifically for Tier Modal elements (optional if you want different styling) */
+#tier-modal .modal-content {
+  max-width: 600px; /* slightly bigger if you want a large preview area */
+}
+
+#tier-modal-image {
+  display: none; /* script shows it if there's an image */
+  margin: 1rem auto;
+  max-width: 500px;
+  max-height: 500px;
+  border: 2px solid #374151;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+/* If you have a separate empty message element for the tier modal */
+#tier-modal-empty {
+  display: none;
+  margin: 1rem 0;
+  color: #F9FAFB;
+  font-size: 1.1rem;
+}
+
+/* You could also style the close button in the modal, e.g.: */
+#close-tier-modal {
+  background-color: transparent;
+  border: none;
+  color: #F9FAFB;
+  font-size: 1.5rem;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+}

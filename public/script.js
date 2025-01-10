@@ -6,15 +6,17 @@ let currentImageIndex = 0;
 let history = [];
 let ratingMap = { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
+// Additional variables for the tier modal
+let currentTierViewing = 0;       // which tier is being viewed in the modal
+let tierImages = [];             // array of images in that tier
+let currentTierImageIndex = 0;   // index of the currently displayed image in tierImages
+
 // -----------------------------
 // On Page Load
 // -----------------------------
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1. Optionally load local storage (if you want continuity):
   loadStateFromLocalStorage(); 
-  // e.g. images, currentImageIndex, ratingMap, etc. might have values.
 
-  // 2. Always fetch the up-to-date list from the server:
   try {
     const resp = await fetch('/api/list-images');
     if (resp.ok) {
@@ -22,10 +24,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Merge or overwrite. For simplicity, let's overwrite if we have no local images.
       if (images.length === 0) {
         images = serverImages;
-      } else {
-        // If you want to combine local + server, handle duplicates here.
-        // images = [...new Set([...images, ...serverImages])];
-      }
+      } 
+      // else if you prefer merging: images = [...new Set([...images, ...serverImages])];
     } else {
       console.warn('Could not fetch images from server.');
     }
@@ -33,14 +33,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error('Error fetching images:', err);
   }
 
-  // 3. Display the center image or a "no images" message
   loadImage();
-
-  // 4. Setup your button event listeners
   setupEventListeners();
 });
 
-// Example: Factor out your event listeners for clarity
+// Factor out your event listeners for clarity
 function setupEventListeners() {
   document.getElementById("undo-btn").addEventListener("click", undoLastAction);
   document.getElementById("skip-btn").addEventListener("click", skipImage);
@@ -48,14 +45,52 @@ function setupEventListeners() {
   document.getElementById("upload-btn").addEventListener("click", () => {
     document.getElementById("image-upload").click();
   });
+  
+  // Bump rank inside tier modal
+  document.getElementById("bump-up-rank").addEventListener("click", () => {
+    bumpRank(1); // +1 rank
+  });
+  document.getElementById("bump-down-rank").addEventListener("click", () => {
+    bumpRank(-1); // -1 rank
+  });
+
+  // Prev/next in tier modal
+  document.getElementById("prev-tier-image").addEventListener("click", () => {
+    if (tierImages.length > 0) {
+      currentTierImageIndex = (currentTierImageIndex - 1 + tierImages.length) % tierImages.length;
+      document.getElementById("tier-modal-image").src = tierImages[currentTierImageIndex];
+      document.getElementById("tier-modal-empty").style.display = "none";
+      document.getElementById("tier-modal-image").style.display = "block";
+    }
+  });
+  document.getElementById("next-tier-image").addEventListener("click", () => {
+    if (tierImages.length > 0) {
+      currentTierImageIndex = (currentTierImageIndex + 1) % tierImages.length;
+      document.getElementById("tier-modal-image").src = tierImages[currentTierImageIndex];
+      document.getElementById("tier-modal-empty").style.display = "none";
+      document.getElementById("tier-modal-image").style.display = "block";
+    }
+  });
+
+  // Close tier modal
+  document.getElementById("close-tier-modal").addEventListener("click", () => {
+    document.getElementById("tier-modal").style.display = "none";
+  });
+  
+  // Open tier modals
+  document.getElementById("rating-1").addEventListener("click", () => openTierModal(1));
+  document.getElementById("rating-2").addEventListener("click", () => openTierModal(2));
+  document.getElementById("rating-3").addEventListener("click", () => openTierModal(3));
+  document.getElementById("rating-4").addEventListener("click", () => openTierModal(4));
+  document.getElementById("rating-5").addEventListener("click", () => openTierModal(5));
+
+  // Upload images
   document.getElementById("image-upload").addEventListener("change", uploadImages);
 
-  // Show the modal on reset
+  // Reset modal
   document.getElementById("reset-btn").addEventListener("click", () => {
     document.getElementById("reset-modal").style.display = "flex";
   });
-
-  // Modal Confirm / Cancel
   document.getElementById("confirm-reset-btn").addEventListener("click", async () => {
     const deleteImagesChecked = document.getElementById("delete-images-checkbox").checked;
     await resetTierBoard(deleteImagesChecked);
@@ -69,36 +104,106 @@ function setupEventListeners() {
   document.addEventListener("keydown", handleKeyPress);
 }
 
+// ----------------------
+// Bump Rank Function
+// ----------------------
+function bumpRank(delta) {
+  const oldTier = currentTierViewing;
+  const newTier = oldTier + delta;
+
+  if (newTier < 1 || newTier > 5) {
+    alert("Cannot move this image further in that direction.");
+    return;
+  }
+
+  const imageToMove = tierImages[currentTierImageIndex];
+
+  // 1. Remove from oldTier
+  const arrOld = ratingMap[oldTier];
+  const idxOld = arrOld.indexOf(imageToMove);
+  if (idxOld !== -1) {
+    arrOld.splice(idxOld, 1);
+  }
+
+  // 2. Add to newTier
+  ratingMap[newTier].push(imageToMove);
+
+  // 3. Update local arrays in the modal
+  tierImages.splice(currentTierImageIndex, 1);
+  if (tierImages.length === 0) {
+    // close the modal or handle differently
+    document.getElementById("tier-modal").style.display = "none";
+  } else {
+    if (currentTierImageIndex >= tierImages.length) {
+      currentTierImageIndex = tierImages.length - 1;
+    }
+    document.getElementById("tier-modal-image").src = tierImages[currentTierImageIndex];
+  }
+
+  // 4. Update the rating previews
+  updateRatingPreview(newTier);
+  updateRatingPreview(oldTier);
+
+  // 5. Save state
+  saveStateToLocalStorage();
+}
+
+// ----------------------
+// Open Tier Modal
+// ----------------------
+function openTierModal(tier) {
+  currentTierViewing = tier;
+  tierImages = ratingMap[tier];
+  currentTierImageIndex = 0;
+
+  document.getElementById("tier-modal-number").textContent = tier;
+
+  // If there's at least 1 image, display it
+  if (tierImages.length > 0) {
+    document.getElementById("tier-modal-image").src = tierImages[currentTierImageIndex];
+    document.getElementById("tier-modal-image").style.display = "block";
+    document.getElementById("tier-modal-empty").style.display = "none";
+  } else {
+    // No images in this tier
+    document.getElementById("tier-modal-image").removeAttribute("src");
+    document.getElementById("tier-modal-image").style.display = "none";
+
+    // Show a simple message
+    document.getElementById("tier-modal-empty").textContent = `No images in tier ${tier}`;
+    document.getElementById("tier-modal-empty").style.display = "block";
+  }
+
+  document.getElementById("tier-modal").style.display = "flex";
+}
+
+// ----------------------
+// loadImage
+// ----------------------
 function loadImage() {
   const centerImg = document.getElementById("center-image");
-  const noImagesMsg = document.getElementById("no-images-message"); 
-  // noImagesMsg is a <div> or <p> element that you hide/show as needed.
+  const noImagesMsg = document.getElementById("no-images-message");
 
-  // 1. Filter out images that have already been rated
+  // Filter out rated
   const remaining = images.filter(img => !isImageRated(img));
 
-  // 2. If no unranked images exist at all
   if (remaining.length === 0) {
     centerImg.style.display = "none";
-    // Optionally clear out any previous src to avoid lingering old images
     centerImg.removeAttribute("src");
-
-    noImagesMsg.style.display = "block";  
+    noImagesMsg.style.display = "block";
     noImagesMsg.textContent = "No images remain to be ranked. Please upload more to continue.";
     return; 
   }
 
-  // 3. If we've gone past the last unranked image
+  // If we've gone past the last unranked image
   if (currentImageIndex >= remaining.length) {
     centerImg.style.display = "none";
     centerImg.removeAttribute("src");
-
     noImagesMsg.style.display = "block";
     noImagesMsg.textContent = "All images have been ranked or no images remain.";
     return;
   }
 
-  // 4. Otherwise, display the current unranked image
+  // Otherwise, show the current unranked image
   noImagesMsg.style.display = "none";
   centerImg.src = remaining[currentImageIndex];
   centerImg.style.display = "block";
@@ -108,7 +213,6 @@ function loadImage() {
 // Check if Image is Rated
 // ----------------------
 function isImageRated(imgSrc) {
-  // Return true if this image is found in any of the ratingMap arrays
   for (let i = 1; i <= 5; i++) {
     if (ratingMap[i].includes(imgSrc)) {
       return true;
@@ -121,14 +225,12 @@ function isImageRated(imgSrc) {
 // Keyboard Handling
 // ----------------------
 function handleKeyPress(event) {
-  // If user presses 1, 2, 3, 4, or 5, rate the image
   const key = event.key;
   if (["1", "2", "3", "4", "5"].includes(key)) {
     assignRating(parseInt(key, 10));
   } else if (event.key === "ArrowLeft") {
     // Undo
     undoLastAction();
-    console.log('left arrow pressed');
   } else if (event.key === "ArrowRight") {
     // Skip
     skipImage();
@@ -144,16 +246,19 @@ function assignRating(rating) {
 
   let imgSrc = centerImg.src;
 
-  // If the image is already rated, maybe do nothing or allow re-rating
-  // For now, let's allow re-rating (remove from old rating first)
+  // Remove from old rating if it exists
   removeImageFromAllRatings(imgSrc);
 
-  // Push this image into the chosen rating
+  // Add to chosen rating
   ratingMap[rating].push(imgSrc);
   console.log(`Assigned ${imgSrc} to rating ${rating}`);
 
-  // Record in history for undo
-  history.push({ imgSrc, rating });
+  // Record in history for undo, now with type: 'assign'
+  history.push({
+    type: 'assign',
+    image: imgSrc, 
+    rating
+  });
 
   // Update the rating preview
   updateRatingPreview(rating);
@@ -162,29 +267,27 @@ function assignRating(rating) {
   currentImageIndex++;
   loadImage();
 
-  // Save state
   saveStateToLocalStorage();
 }
 
 // ----------------------
 // Update the Rating Preview
-// (shows last image in each rating tier)
 // ----------------------
 function updateRatingPreview(rating) {
   const ratingContainer = document.getElementById(`rating-${rating}`);
   if (!ratingContainer) return;
 
-  // Remove any existing image child
+  // Clear existing
   while (ratingContainer.firstChild) {
     ratingContainer.removeChild(ratingContainer.firstChild);
   }
 
-  // Add text label again or star label
+  // Add the label
   const labelSpan = document.createElement("span");
   labelSpan.textContent = `${rating} ★`;
   ratingContainer.appendChild(labelSpan);
 
-  // Get the last image in ratingMap[rating]
+  // Show only the last image in ratingMap[rating]
   const ratedImages = ratingMap[rating];
   if (ratedImages.length > 0) {
     const lastImgSrc = ratedImages[ratedImages.length - 1];
@@ -199,7 +302,7 @@ function updateRatingPreview(rating) {
 // ----------------------
 function removeImageFromAllRatings(imgSrc) {
   for (let i = 1; i <= 5; i++) {
-    let arr = ratingMap[i];
+    const arr = ratingMap[i];
     const index = arr.indexOf(imgSrc);
     if (index !== -1) {
       arr.splice(index, 1);
@@ -208,7 +311,7 @@ function removeImageFromAllRatings(imgSrc) {
 }
 
 // ----------------------
-// Undo the Last Rating
+// Undo the Last Rating or Skip
 // ----------------------
 function undoLastAction() {
   if (history.length === 0) {
@@ -218,7 +321,7 @@ function undoLastAction() {
   const lastAction = history.pop();
 
   if (lastAction.type === 'assign') {
-    // e.g., { type: 'assign', image: imgSrc, rating: rating }
+    // e.g., { type: 'assign', image: "...", rating: ... }
     removeImageFromAllRatings(lastAction.image);
     updateRatingPreview(lastAction.rating);
     if (currentImageIndex > 0) {
@@ -226,14 +329,10 @@ function undoLastAction() {
     }
     loadImage();
     saveStateToLocalStorage();
-
   } else if (lastAction.type === 'skip') {
-    // e.g., { type: 'skip', index: 2, image: "/images/cat.jpg" }
-    // Just move currentImageIndex back to where it was
-    currentImageIndex = lastAction.index;
+    currentImageIndex = lastAction.index; 
     loadImage();
     saveStateToLocalStorage();
-
   } else {
     console.log("Unknown action type:", lastAction.type);
   }
@@ -244,17 +343,15 @@ function undoLastAction() {
 // ----------------------
 function skipImage() {
   const centerImg = document.getElementById("center-image");
-  // This is the image being skipped
   const skippedSrc = centerImg.src;
 
-  // Record the skip in history
+  // Record the skip
   history.push({
     type: 'skip',
     index: currentImageIndex,
     image: skippedSrc
   });
 
-  // Move to the next image
   currentImageIndex++;
   loadImage();
   saveStateToLocalStorage();
@@ -264,8 +361,6 @@ function skipImage() {
 // Export Rankings as JSON
 // ----------------------
 function exportRankings() {
-  // ratingMap is already an object keyed by rating
-  // E.g. {1: ["imageA.jpg"], 2: ["imageB.jpg"], ...}
   const dataStr = JSON.stringify(ratingMap, null, 2);
   const blob = new Blob([dataStr], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -277,131 +372,123 @@ function exportRankings() {
   URL.revokeObjectURL(url);
 }
 
+// ----------------------
+// Local Storage
+// ----------------------
 function loadStateFromLocalStorage() {
-    const savedImages = localStorage.getItem('images');
-    if (savedImages) {
-      images = JSON.parse(savedImages);
-    }
-    const savedIndex = localStorage.getItem('currentImageIndex');
-    if (savedIndex) {
-      currentImageIndex = parseInt(savedIndex, 10);
-    }
-    const savedRatingMap = localStorage.getItem('ratingMap');
-    if (savedRatingMap) {
-      ratingMap = JSON.parse(savedRatingMap);
-    }
-    const savedHistory = localStorage.getItem('history');
-    if (savedHistory) {
-      history = JSON.parse(savedHistory);
-    }
+  const savedImages = localStorage.getItem('images');
+  if (savedImages) {
+    images = JSON.parse(savedImages);
   }
-  
-  function saveStateToLocalStorage() {
-    localStorage.setItem('images', JSON.stringify(images));
-    localStorage.setItem('currentImageIndex', currentImageIndex);
-    localStorage.setItem('ratingMap', JSON.stringify(ratingMap));
-    localStorage.setItem('history', JSON.stringify(history));
+  const savedIndex = localStorage.getItem('currentImageIndex');
+  if (savedIndex) {
+    currentImageIndex = parseInt(savedIndex, 10);
+  }
+  const savedRatingMap = localStorage.getItem('ratingMap');
+  if (savedRatingMap) {
+    ratingMap = JSON.parse(savedRatingMap);
+  }
+  const savedHistory = localStorage.getItem('history');
+  if (savedHistory) {
+    history = JSON.parse(savedHistory);
+  }
+}
+
+function saveStateToLocalStorage() {
+  localStorage.setItem('images', JSON.stringify(images));
+  localStorage.setItem('currentImageIndex', currentImageIndex);
+  localStorage.setItem('ratingMap', JSON.stringify(ratingMap));
+  localStorage.setItem('history', JSON.stringify(history));
+}
+
+// ----------------------
+// Upload Images
+// ----------------------
+function uploadImages(event) {
+  const files = event.target.files;
+  if (!files || files.length === 0) {
+    return;
   }
 
-  function uploadImages(event) {
-    const files = event.target.files;
-    if (!files || files.length === 0) {
-      return;
-    }
-  
-    // Count how many unranked images existed before new uploads
-    const oldRemaining = images.filter(img => !isImageRated(img)).length;
-  
-    const formData = new FormData();
-    for (const file of files) {
-      formData.append('images', file);
-    }
-  
-    fetch('/api/upload', {
-      method: 'POST',
-      body: formData
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Upload failed');
-        }
-        return response.json();
-      })
-      .then(data => {
-        // e.g. data.files = ["1234-cat.jpg", "5678-dog.png"]
-        console.log('Server returned uploaded files:', data.files);
-  
-        // Build the actual /images/... paths
-        const newPaths = data.files.map(f => `/images/${f}`);
-        images.push(...newPaths);
-  
-        // If there were 0 unranked images, we were effectively "done" before upload.
-        // Reset the index so we see newly uploaded images first.
-        if (oldRemaining === 0) {
-          currentImageIndex = 0;
-        }
-  
-        // Persist the updated array
-        saveStateToLocalStorage();
-  
-        // Always refresh the main view
-        loadImage();
-      })
-      .catch(err => console.error('Error uploading images:', err));
+  // Count how many unranked images existed
+  const oldRemaining = images.filter(img => !isImageRated(img)).length;
+
+  const formData = new FormData();
+  for (const file of files) {
+    formData.append('images', file);
   }
-  
-  // ----------------------
-  // resetTierBoard
-  // ----------------------
-  async function resetTierBoard(shouldDelete) {
-    images = [];
-    currentImageIndex = 0;
-    history = [];
-    ratingMap = { 1: [], 2: [], 3: [], 4: [], 5: [] };
-  
-    localStorage.removeItem('images');
-    localStorage.removeItem('currentImageIndex');
-    localStorage.removeItem('ratingMap');
-    localStorage.removeItem('history');
-  
-    // Hard reset?
-    if (shouldDelete) {
-      try {
-        const resp = await fetch('/api/delete-all-images', { method: 'DELETE' });
-        if (!resp.ok) {
-          console.error("Failed to delete images on server.");
-        } else {
-          console.log("Server images deleted successfully.");
-        }
-      } catch (err) {
-        console.error("Error deleting images on server:", err);
+
+  fetch('/api/upload', {
+    method: 'POST',
+    body: formData
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Upload failed');
       }
-    }
-  
-    // Soft reset => re-fetch from /api/list-images
+      return response.json();
+    })
+    .then(data => {
+      console.log('Server returned uploaded files:', data.files);
+      const newPaths = data.files.map(f => `/images/${f}`);
+      images.push(...newPaths);
+
+      // If there were 0 unranked images, we were effectively "done" before
+      if (oldRemaining === 0) {
+        currentImageIndex = 0;
+      }
+
+      saveStateToLocalStorage();
+      loadImage();
+    })
+    .catch(err => console.error('Error uploading images:', err));
+}
+
+// ----------------------
+// resetTierBoard
+// ----------------------
+async function resetTierBoard(shouldDelete) {
+  images = [];
+  currentImageIndex = 0;
+  history = [];
+  ratingMap = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+
+  localStorage.removeItem('images');
+  localStorage.removeItem('currentImageIndex');
+  localStorage.removeItem('ratingMap');
+  localStorage.removeItem('history');
+
+  if (shouldDelete) {
     try {
-      const resp = await fetch('/api/list-images');
-      if (resp.ok) {
-        const data = await resp.json();
-        // data might be ["/images/foo.jpg", "/images/bar.png"]
-        images = data;
-        console.log("Fetched images after reset:", images);
+      const resp = await fetch('/api/delete-all-images', { method: 'DELETE' });
+      if (!resp.ok) {
+        console.error("Failed to delete images on server.");
       } else {
-        console.warn("Could not fetch images after reset.");
+        console.log("Server images deleted successfully.");
       }
     } catch (err) {
-      console.error("Error fetching images after reset:", err);
+      console.error("Error deleting images on server:", err);
     }
-  
-    // Update rating previews
-    for (let i = 1; i <= 5; i++) {
-      updateRatingPreview(i);
-    }
-  
-    // Show the first image if available
-    loadImage();
-    saveStateToLocalStorage();
   }
-  
 
-  
+  // Soft reset => re-fetch from /api/list-images
+  try {
+    const resp = await fetch('/api/list-images');
+    if (resp.ok) {
+      const data = await resp.json();
+      images = data;
+      console.log("Fetched images after reset:", images);
+    } else {
+      console.warn("Could not fetch images after reset.");
+    }
+  } catch (err) {
+    console.error("Error fetching images after reset:", err);
+  }
+
+  for (let i = 1; i <= 5; i++) {
+    updateRatingPreview(i);
+  }
+
+  loadImage();
+  saveStateToLocalStorage();
+}

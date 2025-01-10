@@ -18,6 +18,33 @@
       <div class="rating-container" id="rating-5"><span>5 ★</span></div>
     </div>
 
+  <!-- Tier Modal -->
+  <div id="tier-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <button id="close-tier-modal">&times;</button>
+      
+      <h2>Tier <span id="tier-modal-number"></span> Preview</h2>
+
+      <!-- Add this paragraph -->
+      <p id="tier-modal-empty" style="display:none; text-align:center; margin-bottom:1rem;">
+        <!-- This text is dynamically updated in script.js -->
+      </p>
+
+      <img id="tier-modal-image" src="" style="max-width: 500px; display: none; margin:1rem auto;" />
+
+      <div class="buttons">
+        <button id="prev-tier-image">Prev</button>
+        <button id="next-tier-image">Next</button>
+      </div>
+
+      <div class="buttons" style="margin-top: 1rem;">
+        <button id="bump-up-rank">Bump Up Rank</button>
+        <button id="bump-down-rank">Bump Down Rank</button>
+      </div>
+    </div>
+  </div>
+
+
     <!-- 
       A message for when no images exist. Hidden by default (display:none).
       We'll show this if images.length === 0.
