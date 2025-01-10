@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>No Hardcoded Demo Images</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Aesthetic Image Rating</h1>
+    
+    <!-- Rating containers (1–5), optional -->
+    <div class="rating-row">
+      <div class="rating-container" id="rating-1"><span>1 ★</span></div>
+      <div class="rating-container" id="rating-2"><span>2 ★</span></div>
+      <div class="rating-container" id="rating-3"><span>3 ★</span></div>
+      <div class="rating-container" id="rating-4"><span>4 ★</span></div>
+      <div class="rating-container" id="rating-5"><span>5 ★</span></div>
+    </div>
+
+    <!-- 
+      A message for when no images exist. Hidden by default (display:none).
+      We'll show this if images.length === 0.
+    -->
+    <div id="no-images-message" style="display: none; text-align:center; margin-bottom:2rem;">
+      <p>No images available for ranking. Please upload images to start.</p>
+    </div>
+
+    <!-- Center image -->
+    <img id="center-image" src="" alt="Current Image" style="display:none;" />
+
+    <!-- Buttons row -->
+    <div class="buttons">
+      <!-- Upload -->
+      <button id="upload-btn">Upload Images</button>
+      <input 
+        type="file"
+        id="image-upload"
+        name="images"
+        accept="image/*"
+        multiple
+        hidden
+      />
+
+      <!-- Undo, Skip, Reset, Export -->
+      <button id="undo-btn">Undo (←)</button>
+      <button id="skip-btn">Skip (→)</button>
+      <button id="reset-btn">Reset</button>
+      <button id="export-btn">Export JSON</button>
+    </div>
+  </div>
+
+  <!-- Modal for reset (optional) -->
+  <div id="reset-modal" style="display: none;" class="modal">
+    <div class="modal-content">
+      <h2>Reset Tier Board</h2>
+      <p>Choose how you want to reset your data:</p>
+
+      <label>
+        <input id="delete-images-checkbox" type="checkbox" />
+        Delete images from the server folder (Hard Reset)?
+      </label>
+
+      <div class="modal-buttons">
+        <button id="confirm-reset-btn">Confirm</button>
+        <button id="cancel-reset-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
