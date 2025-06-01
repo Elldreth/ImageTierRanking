@@ -5,33 +5,23 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-
-:root {
-    --bg-color: #111827;
-    --surface-color: #1F2937;
-    --accent: #6366f1;
-    --accent-hover: #4f46e5;
-    --accent-active: #4338ca;
-    --text-light: #F9FAFB;
-    --text-muted: #9CA3AF;
-}
+  }
   
-html, body {
+  html, body {
     height: 100%;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #1e3a8a, var(--bg-color));
-    color: var(--text-light);
+    font-family: 'Open Sans', sans-serif; /* or your favorite */
+    background-color: #1F2937; /* Dark gray-blue background */
+    color: #F9FAFB;           /* Light text */
     line-height: 1.5;
-}
+  }
   
   /* Container to center everything */
-.container {
+  .container {
     width: 90%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 0;
-}
+  }
   
   /* 2. Headings */
   h1 {
@@ -42,41 +32,42 @@ html, body {
   }
   
   /* 3. Rating Row - displays the 5 rating "slots" */
-.rating-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1rem;
+  .rating-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
     margin-bottom: 2rem;
-}
+    flex-wrap: wrap; /* responsive wrap */
+  }
   
   /* 4. Each Rating Container */
-.rating-container {
+  .rating-container {
     position: relative;
-    width: 150px;
-    height: 150px;
-    border: 1px solid #374151;
-    border-radius: 12px;
-    background-color: var(--surface-color);
+    width: 200px;
+    height: 200px;
+    border: 2px solid #374151; /* Subtle border */
+    border-radius: 8px;
+    background-color: #2D3748; /* Slightly lighter dark */
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: auto;
+    margin: 0.5rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-}
+  }
   
-.rating-container:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
-    transform: translateY(-2px) scale(1.03);
-}
+  .rating-container:hover {
+    /* Hover uses amber accent color for a glow effect */
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+    transform: translateY(-2px);
+  }
   
-.rating-container span {
-    color: var(--text-muted);
+  .rating-container span {
+    color: #9CA3AF; /* lighter gray text */
     font-size: 1.1rem;
     pointer-events: none;
-    z-index: 2;
-}
+    z-index: 2; /* so it stays above the image if present */
+  }
   
   /* If an image is present, ensure it fits */
   .rating-container img {
@@ -90,45 +81,43 @@ html, body {
   }
   
   /* 5. Center Image */
-#center-image {
+  #center-image {
     display: block;
     margin: 0 auto 1rem auto;
     max-width: 800px;
     max-height: 800px;
-    border: 1px solid #374151;
-    border-radius: 12px;
-    background-color: var(--surface-color);
+    border: 2px solid #374151;
+    border-radius: 8px;
+    background-color: #2D3748;
     object-fit: contain;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
+  }
   
   /* 6. Button Row */
-.buttons {
+  .buttons {
     text-align: center;
     margin-top: 1rem;
-}
+  }
   
   /* Style for all buttons */
-.buttons button {
-    background-color: var(--accent);
-    color: var(--text-light);
+  .buttons button {
+    background-color: #4F46E5; /* Indigo base */
+    color: #F9FAFB;
     border: none;
     border-radius: 6px;
     padding: 0.6rem 1.2rem;
     font-size: 1rem;
     margin: 0.5rem;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.2s;
-}
+    transition: background-color 0.2s;
+  }
   
-.buttons button:hover {
-    background-color: var(--accent-hover);
-    transform: translateY(-2px);
-}
+  .buttons button:hover {
+    background-color: #4338CA; /* Darker indigo on hover */
+  }
   
-.buttons button:active {
-    background-color: var(--accent-active);
-}
+  .buttons button:active {
+    background-color: #3730A3; /* Even darker on click */
+  }
   
   /* 7. Hide the file input (we trigger it via JS) */
   #image-upload {
@@ -183,8 +172,8 @@ html, body {
   
   /* Modal buttons can share styling with the rest if you like */
   .modal-buttons button {
-    background-color: var(--accent);
-    color: var(--text-light);
+    background-color: #4F46E5;
+    color: #F9FAFB;
     border: none;
     border-radius: 6px;
     padding: 0.6rem 1.2rem;
@@ -192,8 +181,8 @@ html, body {
     cursor: pointer;
     transition: background-color 0.2s;
   }
-
+  
   .modal-buttons button:hover {
-    background-color: var(--accent-hover);
+    background-color: #4338CA;
   }
   
