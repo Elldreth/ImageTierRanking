@@ -153,7 +153,9 @@ function bumpRank(delta) {
 // ----------------------
 function openTierModal(tier) {
   currentTierViewing = tier;
-  tierImages = ratingMap[tier];
+  // Make a copy so modifications inside the modal don't directly mutate
+  // the original ratingMap array until we explicitly update it.
+  tierImages = ratingMap[tier].slice();
   currentTierImageIndex = 0;
 
   document.getElementById("tier-modal-number").textContent = tier;
