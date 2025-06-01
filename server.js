@@ -6,13 +6,21 @@ const fs = require('fs');
 const app = express();
 const PORT = 3000;
 
+// Dataset name can be provided via env var. Images will be stored in
+// `images/<DATASET>` so multiple datasets remain isolated.
+const DATASET = process.env.DATASET || 'default';
+
 // Serve the `public` directory statically
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configure the images directory
-const IMAGES_DIR = path.join(__dirname, 'images');
+// Configure the images directory for the selected dataset
+const BASE_IMAGES_DIR = path.join(__dirname, 'images');
+const IMAGES_DIR = path.join(BASE_IMAGES_DIR, DATASET);
 
-// Ensure the images folder exists
+// Ensure the dataset folder exists
+if (!fs.existsSync(BASE_IMAGES_DIR)) {
+    fs.mkdirSync(BASE_IMAGES_DIR);
+}
 if (!fs.existsSync(IMAGES_DIR)) {
     fs.mkdirSync(IMAGES_DIR);
 }
@@ -92,6 +100,14 @@ app.get('/api/list-images', (req, res) => {
         // Map filenames to their accessible URLs
         res.json(images.map(file => `/images/${file}`));
     });
+});
+
+/**
+ * GET /api/dataset
+ * Returns the current dataset name so the client can isolate its local storage
+ */
+app.get('/api/dataset', (req, res) => {
+    res.json({ dataset: DATASET });
 });
 
 /**

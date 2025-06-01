@@ -11,11 +11,26 @@ let currentTierViewing = 0;       // which tier is being viewed in the modal
 let tierImages = [];             // array of images in that tier
 let currentTierImageIndex = 0;   // index of the currently displayed image in tierImages
 
+// Dataset identifier provided by the server so local storage can remain
+// separated for different image sets.
+let datasetId = 'default';
+let LS_PREFIX = `dataset_${datasetId}_`;
+
 // -----------------------------
 // On Page Load
 // -----------------------------
 document.addEventListener("DOMContentLoaded", async () => {
-  loadStateFromLocalStorage(); 
+  try {
+    const dsResp = await fetch("/api/dataset");
+    if (dsResp.ok) {
+      const data = await dsResp.json();
+      datasetId = data.dataset || "default";
+    }
+  } catch (err) {
+    console.error("Error fetching dataset information:", err);
+  }
+  LS_PREFIX = `dataset_${datasetId}_`;
+  loadStateFromLocalStorage();
 
   try {
     const resp = await fetch('/api/list-images');
@@ -378,29 +393,29 @@ function exportRankings() {
 // Local Storage
 // ----------------------
 function loadStateFromLocalStorage() {
-  const savedImages = localStorage.getItem('images');
+  const savedImages = localStorage.getItem(`${LS_PREFIX}images`);
   if (savedImages) {
     images = JSON.parse(savedImages);
   }
-  const savedIndex = localStorage.getItem('currentImageIndex');
+  const savedIndex = localStorage.getItem(`${LS_PREFIX}currentImageIndex`);
   if (savedIndex) {
     currentImageIndex = parseInt(savedIndex, 10);
   }
-  const savedRatingMap = localStorage.getItem('ratingMap');
+  const savedRatingMap = localStorage.getItem(`${LS_PREFIX}ratingMap`);
   if (savedRatingMap) {
     ratingMap = JSON.parse(savedRatingMap);
   }
-  const savedHistory = localStorage.getItem('history');
+  const savedHistory = localStorage.getItem(`${LS_PREFIX}history`);
   if (savedHistory) {
     history = JSON.parse(savedHistory);
   }
 }
 
 function saveStateToLocalStorage() {
-  localStorage.setItem('images', JSON.stringify(images));
-  localStorage.setItem('currentImageIndex', currentImageIndex);
-  localStorage.setItem('ratingMap', JSON.stringify(ratingMap));
-  localStorage.setItem('history', JSON.stringify(history));
+  localStorage.setItem(`${LS_PREFIX}images`, JSON.stringify(images));
+  localStorage.setItem(`${LS_PREFIX}currentImageIndex`, currentImageIndex);
+  localStorage.setItem(`${LS_PREFIX}ratingMap`, JSON.stringify(ratingMap));
+  localStorage.setItem(`${LS_PREFIX}history`, JSON.stringify(history));
 }
 
 // ----------------------
@@ -455,10 +470,10 @@ async function resetTierBoard(shouldDelete) {
   history = [];
   ratingMap = { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
-  localStorage.removeItem('images');
-  localStorage.removeItem('currentImageIndex');
-  localStorage.removeItem('ratingMap');
-  localStorage.removeItem('history');
+  localStorage.removeItem(`${LS_PREFIX}images`);
+  localStorage.removeItem(`${LS_PREFIX}currentImageIndex`);
+  localStorage.removeItem(`${LS_PREFIX}ratingMap`);
+  localStorage.removeItem(`${LS_PREFIX}history`);
 
   if (shouldDelete) {
     try {

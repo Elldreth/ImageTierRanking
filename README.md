@@ -27,11 +27,13 @@ This application provides a **web-based interface** for uploading, viewing, and 
    - **public/**: Contains `index.html`, `style.css`, `script.js`, and possibly other client-side assets.  
    - **images/**: Where uploaded images are stored. The server automatically creates this folder if it doesn’t exist.  
 
-4. **Start the Server**  
+4. **Start the Server**
    ```bash
-   node server.js
+   # optional: specify a dataset name to keep rankings separate
+   DATASET=my-dataset node server.js
    ```
-   By default, it runs on **http://localhost:3000** (adjustable in the code).
+   By default, it runs on **http://localhost:3000** (adjustable in the code) and stores
+   uploaded images under `images/my-dataset` (or `images/default` if omitted).
 
 ## Usage
 
@@ -67,7 +69,8 @@ This application provides a **web-based interface** for uploading, viewing, and 
 
 ## Configuration
 
-- **Port**: Currently defaults to `PORT = 3000` in `server.js`. You can change it by editing the code or using environment variables.  
+- **Port**: Currently defaults to `PORT = 3000` in `server.js`. You can change it by editing the code or using environment variables.
+- **Dataset**: Set `DATASET=my-dataset` when starting the server to store images and ranking data in `images/my-dataset`. The browser keeps separate local storage per dataset automatically.
 - **File Size Limit**: Multer is configured to accept up to 50MB per file. Adjust in `server.js` if needed.
 
 ## Potential Issues & Troubleshooting
