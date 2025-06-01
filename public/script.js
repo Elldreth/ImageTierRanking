@@ -117,6 +117,14 @@ function setupEventListeners() {
 
   // Keyboard shortcuts
   document.addEventListener("keydown", handleKeyPress);
+
+  // Clickable star rating
+  document.querySelectorAll("#star-rating span").forEach((el) => {
+    el.addEventListener("click", () => {
+      const rating = parseInt(el.getAttribute("data-rating"), 10);
+      assignRating(rating);
+    });
+  });
 }
 
 // ----------------------
@@ -133,33 +141,34 @@ function bumpRank(delta) {
 
   const imageToMove = tierImages[currentTierImageIndex];
 
-  // 1. Remove from oldTier
+  // Remove from old tier and add to new tier
   const arrOld = ratingMap[oldTier];
   const idxOld = arrOld.indexOf(imageToMove);
   if (idxOld !== -1) {
     arrOld.splice(idxOld, 1);
   }
-
-  // 2. Add to newTier
   ratingMap[newTier].push(imageToMove);
 
-  // 3. Update local arrays in the modal
-  tierImages.splice(currentTierImageIndex, 1);
+  // Update previews for both tiers
+  updateRatingPreview(oldTier);
+  updateRatingPreview(newTier);
+
+  // Switch modal context to the new tier so the moved image stays visible
+  currentTierViewing = newTier;
+  tierImages = ratingMap[newTier];
+  currentTierImageIndex = ratingMap[newTier].indexOf(imageToMove);
+  document.getElementById("tier-modal-number").textContent = newTier;
+
   if (tierImages.length === 0) {
-    // close the modal or handle differently
-    document.getElementById("tier-modal").style.display = "none";
+    document.getElementById("tier-modal-image").style.display = "none";
+    document.getElementById("tier-modal-empty").textContent = `No images in tier ${newTier}`;
+    document.getElementById("tier-modal-empty").style.display = "block";
   } else {
-    if (currentTierImageIndex >= tierImages.length) {
-      currentTierImageIndex = tierImages.length - 1;
-    }
     document.getElementById("tier-modal-image").src = tierImages[currentTierImageIndex];
+    document.getElementById("tier-modal-empty").style.display = "none";
+    document.getElementById("tier-modal-image").style.display = "block";
   }
 
-  // 4. Update the rating previews
-  updateRatingPreview(newTier);
-  updateRatingPreview(oldTier);
-
-  // 5. Save state
   saveStateToLocalStorage();
 }
 
