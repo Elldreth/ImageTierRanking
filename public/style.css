@@ -5,23 +5,33 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
+}
+
+:root {
+    --bg-color: #111827;
+    --surface-color: #1F2937;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --accent-active: #4338ca;
+    --text-light: #F9FAFB;
+    --text-muted: #9CA3AF;
+}
   
-  html, body {
+html, body {
     height: 100%;
-    font-family: 'Open Sans', sans-serif; /* or your favorite */
-    background-color: #1F2937; /* Dark gray-blue background */
-    color: #F9FAFB;           /* Light text */
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #1e3a8a, var(--bg-color));
+    color: var(--text-light);
     line-height: 1.5;
-  }
+}
   
   /* Container to center everything */
-  .container {
+.container {
     width: 90%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 0;
-  }
+}
   
   /* 2. Headings */
   h1 {
@@ -32,42 +42,41 @@
   }
   
   /* 3. Rating Row - displays the 5 rating "slots" */
-  .rating-row {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
+.rating-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
     margin-bottom: 2rem;
-    flex-wrap: wrap; /* responsive wrap */
-  }
+}
   
   /* 4. Each Rating Container */
-  .rating-container {
+.rating-container {
     position: relative;
-    width: 200px;
-    height: 200px;
-    border: 2px solid #374151; /* Subtle border */
-    border-radius: 8px;
-    background-color: #2D3748; /* Slightly lighter dark */
+    width: 150px;
+    height: 150px;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    background-color: var(--surface-color);
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0.5rem;
+    margin: auto;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
   
-  .rating-container:hover {
-    /* Hover uses amber accent color for a glow effect */
-    box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
-    transform: translateY(-2px);
-  }
+.rating-container:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
+    transform: translateY(-2px) scale(1.03);
+}
   
-  .rating-container span {
-    color: #9CA3AF; /* lighter gray text */
+.rating-container span {
+    color: var(--text-muted);
     font-size: 1.1rem;
     pointer-events: none;
-    z-index: 2; /* so it stays above the image if present */
-  }
+    z-index: 2;
+}
   
   /* If an image is present, ensure it fits */
   .rating-container img {
@@ -81,43 +90,45 @@
   }
   
   /* 5. Center Image */
-  #center-image {
+#center-image {
     display: block;
     margin: 0 auto 1rem auto;
     max-width: 800px;
     max-height: 800px;
-    border: 2px solid #374151;
-    border-radius: 8px;
-    background-color: #2D3748;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    background-color: var(--surface-color);
     object-fit: contain;
-  }
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
   
   /* 6. Button Row */
-  .buttons {
+.buttons {
     text-align: center;
     margin-top: 1rem;
-  }
+}
   
   /* Style for all buttons */
-  .buttons button {
-    background-color: #4F46E5; /* Indigo base */
-    color: #F9FAFB;
+.buttons button {
+    background-color: var(--accent);
+    color: var(--text-light);
     border: none;
     border-radius: 6px;
     padding: 0.6rem 1.2rem;
     font-size: 1rem;
     margin: 0.5rem;
     cursor: pointer;
-    transition: background-color 0.2s;
-  }
+    transition: background-color 0.2s, transform 0.2s;
+}
   
-  .buttons button:hover {
-    background-color: #4338CA; /* Darker indigo on hover */
-  }
+.buttons button:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-2px);
+}
   
-  .buttons button:active {
-    background-color: #3730A3; /* Even darker on click */
-  }
+.buttons button:active {
+    background-color: var(--accent-active);
+}
   
   /* 7. Hide the file input (we trigger it via JS) */
   #image-upload {
@@ -172,8 +183,8 @@
   
   /* Modal buttons can share styling with the rest if you like */
   .modal-buttons button {
-    background-color: #4F46E5;
-    color: #F9FAFB;
+    background-color: var(--accent);
+    color: var(--text-light);
     border: none;
     border-radius: 6px;
     padding: 0.6rem 1.2rem;
@@ -181,8 +192,8 @@
     cursor: pointer;
     transition: background-color 0.2s;
   }
-  
+
   .modal-buttons button:hover {
-    background-color: #4338CA;
+    background-color: var(--accent-hover);
   }
   
